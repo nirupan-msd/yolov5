@@ -179,7 +179,7 @@ def train(hyp):
                                                                  rect=True,
                                                                  cache_images=opt.cache_images,
                                                                  single_cls=opt.single_cls,
-                                                                 set_type='valid'
+                                                                 set_type='valid',
                                                                  num_classes=nc),
                                              batch_size=batch_size,
                                              num_workers=nw,
