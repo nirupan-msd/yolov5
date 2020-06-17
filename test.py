@@ -246,7 +246,7 @@ def test(data,
     maps = np.zeros(nc) + map
     for i, c in enumerate(ap_class):
         maps[c] = ap[i]
-    return (mp, mr, map, f1, *(loss.cpu() / len(dataloader)).tolist()), class_wise_metric, maps, t
+    return (mp, mr, map, mf1, *(loss.cpu() / len(dataloader)).tolist()), class_wise_metric, maps, t
 
 
 if __name__ == '__main__':
