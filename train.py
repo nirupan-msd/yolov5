@@ -313,7 +313,7 @@ def train(hyp):
         with open(results_file, 'a') as f:
             f.write(s + '%10.4g' * 8 % results + '\n')  # P, R, mAP, F1, test_losses=(GIoU, obj, cls, total)
         if not opt.evolve:
-            plot_results()  # save as results.png
+            plot_results(results_file=results_file)  # save as results.png
         if len(opt.name) and opt.bucket:
             os.system('gsutil cp results.txt gs://%s/results/results%s.txt' % (opt.bucket, opt.name))
 

@@ -180,11 +180,11 @@ def test(data,
             stats.append((correct.cpu(), pred[:, 4].cpu(), pred[:, 5].cpu(), tcls))
 
         # Plot images
-        if batch_i < 1:
-            f = 'test_batch%g_gt.jpg' % batch_i  # filename
-            plot_images(img, targets, paths, f, names)  # ground truth
-            f = 'test_batch%g_pred.jpg' % batch_i
-            plot_images(img, output_to_target(output, width, height), paths, f, names)  # predictions
+        # if batch_i < 1:
+        #     f = 'test_batch%g_gt.jpg' % batch_i  # filename
+        #     plot_images(img, targets, paths, f, names)  # ground truth
+        #     f = 'test_batch%g_pred.jpg' % batch_i
+        #     plot_images(img, output_to_target(output, width, height), paths, f, names)  # predictions
 
     # Compute statistics
     stats = [np.concatenate(x, 0) for x in zip(*stats)]  # to numpy
