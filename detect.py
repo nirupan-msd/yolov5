@@ -1,4 +1,6 @@
 import argparse
+import pandas as pd
+from prep_yolo import prep_yolo
 
 from utils.datasets import *
 from utils.utils import *
@@ -139,18 +141,27 @@ if __name__ == '__main__':
     parser.add_argument('--source', type=str, default='inference/images', help='source')  # file/folder, 0 for webcam
     parser.add_argument('--output', type=str, default='inference/output', help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float, default=0.4, help='object confidence threshold')
-    parser.add_argument('--iou-thres', type=float, default=0.5, help='IOU threshold for NMS')
+    parser.add_argument('--conf-thres', type=float, default=0.001, help='object confidence threshold')
+    parser.add_argument('--iou-thres', type=float, default=0.65, help='IOU threshold for NMS')
     parser.add_argument('--fourcc', type=str, default='mp4v', help='output video codec (verify ffmpeg support)')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--view-img', action='store_true', help='display results')
     parser.add_argument('--save-txt', action='store_true', help='save results to *.txt')
     parser.add_argument('--classes', nargs='+', type=int, help='filter by class')
+    parser.add_argument('--class_names', type=str, default='', help='class names')
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
     parser.add_argument('--augment', action='store_true', help='augmented inference')
     opt = parser.parse_args()
     opt.img_size = check_img_size(opt.img_size)
     print(opt)
+
+    if opt.source.endswith('.csv') and opt.class_names:
+        csv_path = opt.source
+        opt.source = 'inference/tmp_images'
+        opt.output = 'inference/tmp_labels'
+        df = pd.read_csv(csv_path)
+
+        assert len(df) == len(df.img_path.unique()), "Duplicate Image Paths!"
 
     with torch.no_grad():
         detect()
