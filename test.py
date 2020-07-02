@@ -61,6 +61,8 @@ def test(data,
     # iouv = iouv[0].view(1)  # comment for mAP@0.5:0.95
     niou = iouv.numel()
 
+    names = model.names if hasattr(model, 'names') else model.module.names
+
     # Dataloader
     if dataloader is None:  # not training
         img = torch.zeros((1, 3, imgsz, imgsz), device=device)  # init img
@@ -85,7 +87,6 @@ def test(data,
                                 collate_fn=dataset.collate_fn)
 
     seen = 0
-    names = model.names if hasattr(model, 'names') else model.module.names
     coco91class = coco80_to_coco91_class()
     s = ('%20s' + '%12s' * 6) % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP@.5', 'F1(or)mAP@.5:.95')
     p, r, f1, mp, mr, map, f1, t0, t1 = 0., 0., 0., 0., 0., 0., 0., 0., 0.
