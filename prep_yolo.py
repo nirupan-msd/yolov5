@@ -8,6 +8,7 @@ import asyncio
 import random
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
+import uuid
 
 
 def xyxy2xywh(x):
@@ -76,7 +77,7 @@ def normalized_format(boxes, dl, wide, ratio, op_size_x, op_size_y):
 
 
 def resize_img_labels(img_path, lis, out_path, op_size):
-    filename = os.path.basename(img_path)
+    filename = str(uuid.uuid5(uuid.NAMESPACE_URL, img_path)) + '.jpg'
     out_image = os.path.join(out_path, "images", filename)
     canvas, dl, wide, ratio = resize_and_pad(img_path, op_size)
     cv2.imwrite(out_image, canvas)
