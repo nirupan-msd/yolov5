@@ -105,7 +105,7 @@ def detect(save_img=False, csv=False, path_dic={}):
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
 
                     if csv:
-                        out_df = out_df.append({'img_path': path_dic[os.path.basename(path)], 'labels_crops': str(xyxy)})
+                        out_df = out_df.append({'img_path': path_dic[os.path.basename(path)], 'labels_crops': str(xyxy)}, ignore_index=True)
 
             # Print time (inference + NMS)
             print('%sDone. (%.3fs)' % (s, t2 - t1))
@@ -164,8 +164,6 @@ if __name__ == '__main__':
 
     if opt.source.endswith('.csv'):
         csv_path = opt.source
-        out_csv_path = opt.output
-
         df = pd.read_csv(csv_path)
         df = df.dropna(subset=['img_path'])
         df = df.drop_duplicates(subset=['img_path'])
@@ -182,9 +180,13 @@ if __name__ == '__main__':
         path_dic = prep_yolo(df, ["dummy"], 'inference/tmp', None)
 
         with torch.no_grad():
-            out_df = detect(df=True, path_dic={})
+            out_df = detect(csv=True, path_dic=path_dic)
 
-        out_df.to_csv(out_csv_path, index=False)
+        out_df.to_csv(csv_path.split('.csv')[0] + '_pred.csv', index=False)
+        df = df.drop(['labels_crops', 'labels'], axis=1)
+        df_merge = df.merge(out_df, on=['img_path'], how='left')
+        df_merge.to_csv(csv_path.split('.csv')[0] + '_out.csv', index=False)
+
     else:
         with torch.no_grad():
             detect()
