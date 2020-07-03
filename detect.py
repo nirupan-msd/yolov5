@@ -168,10 +168,9 @@ if __name__ == '__main__':
 
         df = pd.read_csv(csv_path)
         df = df.dropna(subset=['img_path'])
+        df = df.drop_duplicates(subset=['img_path'])
         df['labels_crops'] = "[0, 0, 0, 0]"
         df['labels'] = "dummy"
-
-        assert len(df) == len(df.img_path.unique()), "Duplicate Image Paths! {} != {}".format(len(df), len(df.img_path.unique()))
 
         opt.source = 'inference/tmp/images'
         opt.output = 'inference/tmp/outputs'
