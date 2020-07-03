@@ -105,7 +105,8 @@ def detect(save_img=False, csv=False, path_dic={}):
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
 
                     if csv:
-                        out_df = out_df.append({'img_path': path_dic[os.path.basename(path)], 'labels_crops': str(xyxy.tolist()), 'labels': str(label)}, ignore_index=True)
+                        xyxy = [int(x.data) for x in xyxy]
+                        out_df = out_df.append({'img_path': path_dic[os.path.basename(path)], 'labels_crops': str(xyxy), 'labels': str(label)}, ignore_index=True)
 
             # Print time (inference + NMS)
             print('%sDone. (%.3fs)' % (s, t2 - t1))
