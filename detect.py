@@ -171,7 +171,7 @@ if __name__ == '__main__':
         df['labels_crops'] = "[0, 0, 0, 0]"
         df['labels'] = "dummy"
 
-        assert len(df) == len(df.dropna().img_path.unique()), "Duplicate Image Paths!"
+        assert len(df) == len(df.img_path.unique()), "Duplicate Image Paths!"
 
         opt.source = 'inference/tmp/images'
         opt.output = 'inference/tmp/outputs'

@@ -30,8 +30,7 @@ def normalize(lab, siz):
 def no_resize_and_no_pad(img_path):
     img = cv2.imread(img_path)
     H, W, _ = img.shape
-    if H > W:
-        wide = False if H > W else True
+    wide = False if H > W else True
     return img, 0, wide, 1
 
 
@@ -91,6 +90,7 @@ def resize_img_labels(img_path, lis, out_path, op_size):
         norm_crop = normalized_format(crops, dl, wide, ratio, op_size, op_size)
     else:
         canvas, dl, wide, ratio = no_resize_and_no_pad(img_path)
+        H, W, _ = canvas.shape
         norm_crop = normalized_format(crops, dl, wide, ratio, W, H)
     filename = str(uuid.uuid5(uuid.NAMESPACE_URL, img_path)) + '.jpg'
     out_image = os.path.join(out_path, "images", filename)
@@ -154,7 +154,7 @@ def prep_yolo(df, classes, out_path, op_size, txt_file_name="img.txt"):
     with open(os.path.join(out_path, txt_file_name), 'w') as d:
         d.write(images)
 
-    path_dic = {str(uuid.uuid5(uuid.NAMESPACE_URL, path)) + '.jpg': path for path in df.img_path.unique().tolist())}
+    path_dic = {str(uuid.uuid5(uuid.NAMESPACE_URL, path)) + '.jpg': path for path in df.img_path.unique().tolist()}
 
     return path_dic
 
