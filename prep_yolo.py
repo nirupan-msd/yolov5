@@ -27,6 +27,14 @@ def normalize(lab, siz):
     return lab
 
 
+def no_resize_and_no_pad(img_path):
+    img = cv2.imread(img_path)
+    H, W, _ = img.shape
+    if H > W:
+        wide = False if H > W else True
+    return img, 0, wide, 1
+
+
 def resize_and_pad(img_path, op_size):
     img = cv2.imread(img_path)
     H, W, _ = img.shape
@@ -77,13 +85,17 @@ def normalized_format(boxes, dl, wide, ratio, op_size_x, op_size_y):
 
 
 def resize_img_labels(img_path, lis, out_path, op_size):
+    crops = [n['labels_crops'] for n in lis]
+    if op_size:
+        canvas, dl, wide, ratio = resize_and_pad(img_path, op_size)
+        norm_crop = normalized_format(crops, dl, wide, ratio, op_size, op_size)
+    else:
+        canvas, dl, wide, ratio = no_resize_and_no_pad(img_path)
+        norm_crop = normalized_format(crops, dl, wide, ratio, W, H)
     filename = str(uuid.uuid5(uuid.NAMESPACE_URL, img_path)) + '.jpg'
     out_image = os.path.join(out_path, "images", filename)
-    canvas, dl, wide, ratio = resize_and_pad(img_path, op_size)
     cv2.imwrite(out_image, canvas)
     out_txt = os.path.join(out_path, "labels", '.'.join(filename.split('.')[:-1]) + '.txt')
-    crops = [n['labels_crops'] for n in lis]
-    norm_crop = normalized_format(crops, dl, wide, ratio, op_size, op_size)
     lab_str = '\n'.join([' '.join([str(lis[i]['labels_idx'])] + [str(m) for m in n]) for i, n in enumerate(norm_crop)])
     fd = open(out_txt, 'w')
     fd.write(lab_str)
@@ -148,6 +160,5 @@ if __name__ == '__main__':
     df = pd.read_csv(sys.argv[1])
     classes = sys.argv[2].split(',')
     out_path = sys.argv[3]
-    op_size = 416
+    op_size = sys.argv[4] if sys.argv[4].lower() not in ["none", "nan", "false"] else None
     prep_yolo(df, classes, out_path, op_size)
-
