@@ -153,7 +153,10 @@ def prep_yolo(df, classes, out_path, op_size, txt_file_name="img.txt"):
     images = '\n'.join([os.path.join(out_path, 'images', n) for n in img_lis])
     with open(os.path.join(out_path, txt_file_name), 'w') as d:
         d.write(images)
-    return dic
+
+    path_dic = {str(uuid.uuid5(uuid.NAMESPACE_URL, path)) + '.jpg': path for path in df.img_path.unique().tolist())}
+
+    return path_dic
 
 
 if __name__ == '__main__':

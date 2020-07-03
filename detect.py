@@ -6,7 +6,7 @@ from utils.datasets import *
 from utils.utils import *
 
 
-def detect(save_img=False):
+def detect(save_img=False, csv=False, path_dic={}):
     out, source, weights, view_img, save_txt, imgsz = \
         opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
     webcam = source == '0' or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
@@ -17,6 +17,8 @@ def detect(save_img=False):
         shutil.rmtree(out)  # delete output folder
     os.makedirs(out)  # make new output folder
     half = device.type != 'cpu'  # half precision only supported on CUDA
+    if csv:
+        out_df = pd.DataFrame()
 
     # Load model
     google_utils.attempt_download(weights)
@@ -102,6 +104,9 @@ def detect(save_img=False):
                         label = '%s %.2f' % (names[int(cls)], conf)
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
 
+                    if csv:
+                        out_df = out_df.append({'img_path': path_dic[os.path.basename(path)], 'labels_crops': str(xyxy)})
+
             # Print time (inference + NMS)
             print('%sDone. (%.3fs)' % (s, t2 - t1))
 
@@ -134,6 +139,9 @@ def detect(save_img=False):
 
     print('Done. (%.3fs)' % (time.time() - t0))
 
+    if csv:
+        return out_df
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -148,20 +156,36 @@ if __name__ == '__main__':
     parser.add_argument('--view-img', action='store_true', help='display results')
     parser.add_argument('--save-txt', action='store_true', help='save results to *.txt')
     parser.add_argument('--classes', nargs='+', type=int, help='filter by class')
-    parser.add_argument('--class_names', type=str, default='', help='class names')
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
     parser.add_argument('--augment', action='store_true', help='augmented inference')
     opt = parser.parse_args()
     opt.img_size = check_img_size(opt.img_size)
     print(opt)
 
-    if opt.source.endswith('.csv') and opt.class_names:
+    if opt.source.endswith('.csv'):
         csv_path = opt.source
-        opt.source = 'inference/tmp_images'
-        opt.output = 'inference/tmp_labels'
+        out_csv_path = opt.output
+
         df = pd.read_csv(csv_path)
+        df = df.dropna(subset=['img_path'])
+        df['labels_crops'] = "[0, 0, 0, 0]"
+        df['labels'] = "dummy"
 
-        assert len(df) == len(df.img_path.unique()), "Duplicate Image Paths!"
+        assert len(df) == len(df.dropna().img_path.unique()), "Duplicate Image Paths!"
 
-    with torch.no_grad():
-        detect()
+        opt.source = 'inference/tmp/images'
+        opt.output = 'inference/tmp/outputs'
+        for fol in [opt.source, opt.output]:
+            if os.path.exists(fol):
+                shutil.rmtree(fol)  # delete folder
+            os.makedirs(fol)  # make new folder
+
+        path_dic = prep_yolo(df, ["dummy"], 'inference/tmp', None)
+
+        with torch.no_grad():
+            out_df = detect(df=True, path_dic={})
+
+        out_df.to_csv(out_csv_path, index=False)
+    else:
+        with torch.no_grad():
+            detect()
